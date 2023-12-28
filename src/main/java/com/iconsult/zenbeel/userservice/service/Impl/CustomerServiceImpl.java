@@ -2,6 +2,7 @@ package com.iconsult.zenbeel.userservice.service.Impl;
 
 import com.iconsult.zenbeel.userservice.exception.ResourceNotFoundException;
 import com.iconsult.zenbeel.userservice.model.dto.CreateOTPDto;
+import com.iconsult.zenbeel.userservice.model.dto.LoginDto;
 import com.iconsult.zenbeel.userservice.model.dto.UserDto;
 import com.iconsult.zenbeel.userservice.model.entity.Customer;
 import com.iconsult.zenbeel.userservice.repository.CustomerRepository;
@@ -93,6 +94,20 @@ public class CustomerServiceImpl implements CustomerService
 
     public Customer createOTP(CreateOTPDto createOTPDto)
     {
-
+        return null;
+    }
+    public String login(LoginDto loginDto) {
+        Customer customer = customerRepository.findByEmail(loginDto.getEmail());
+        if(customer!=null)
+        {
+            if(customer.getEmail().equals(loginDto.getEmail()) && customer.getPassword().equals(loginDto.getPassword()))
+            {
+                return "welcome";
+            }
+            else {
+                throw new ResourceNotFoundException("invalid email or password");
+            }
+        }
+        return "invalid email";
     }
 }
