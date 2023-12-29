@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 
 @Entity
 @Table(name = "customer")
@@ -23,4 +25,6 @@ public class Customer
     private String userName;
     private String password;
     private String securityPicture;
+//    @OneToMany(mappedBy = customer, cascade = CascadeType.ALL)
+//    List<Account> accountList;
 }
