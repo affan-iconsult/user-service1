@@ -4,12 +4,17 @@ import com.iconsult.zenbeel.userservice.exception.ResourceNotFoundException;
 import com.iconsult.zenbeel.userservice.mapper.AccountMapper;
 import com.iconsult.zenbeel.userservice.model.dto.AccountDto;
 import com.iconsult.zenbeel.userservice.model.entity.Account;
+import com.iconsult.zenbeel.userservice.model.entity.Customer;
 import com.iconsult.zenbeel.userservice.repository.AccountRepository;
+import com.iconsult.zenbeel.userservice.repository.CustomerRepository;
 import com.iconsult.zenbeel.userservice.service.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -19,13 +24,24 @@ public class AccountServiceImpl implements AccountService {
     AccountMapper accountMapper;
     @Autowired
     AccountRepository accountRepository;
+
+    @Autowired
+    CustomerRepository customerRepository;
     @Override
-    public AccountDto createAccount(AccountDto accountDto) {
+    public String createAccount(AccountDto accountDto) {
         String accountNumber = generateAccountNumber("zanbeel-");
         Account account = accountMapper.dtoToJpe(accountDto);
         account.setAccountNumber(accountNumber);
-        accountRepository.save(account);
-        return accountMapper.jpeToDto(account);
+        boolean checkCnic = isExpired(accountDto.getCnicIssuance(), accountDto.getCnicExpiry());
+        if(checkCnic)
+        {
+            Customer customer = customerRepository.findById(accountDto.getCustomerId()).orElseThrow(() -> new ResourceNotFoundException("Customer Id Not Found"));
+            account.setCustomer(customer);
+           Account saveAccount =  accountRepository.save(account);
+            return saveAccount.getAccountNumber()+" "+"save successfully !";
+        }
+
+        return "account is not save";
     }
 
     @Override
@@ -52,7 +68,18 @@ public class AccountServiceImpl implements AccountService {
         Account account = getAccountByAccountNumber(accountNumber);
         return accountMapper.jpeToDto(account);
     }
-   private Account updateAccountInfo(AccountDto accountDto)
+
+    @Override
+    public Boolean accountAvailable(String accountNumber, String cnic) {
+        Optional<Account> account = accountRepository.findByAccountNumberAndCnic(accountNumber, cnic);
+        if(account.isPresent())
+        {
+            return true;
+        }
+        return false;
+    }
+
+    private Account updateAccountInfo(AccountDto accountDto)
    {
 
        Account accountDetail = getAccountByAccountNumber(accountDto.getAccountNumber());
@@ -66,7 +93,9 @@ public class AccountServiceImpl implements AccountService {
        accountDetail.setResidentialAddress(accountDto.getResidentialAddress());
        accountDetail.setLineOfBusiness(accountDto.getLineOfBusiness());
        accountDetail.setBusinessAddress(accountDto.getBusinessAddress());
-       return accountRepository.save(accountDetail);
+       accountDetail.setCustomer(accountDetail.getCustomer());
+       Account currentAccountUpdated = accountRepository.save(accountDetail);
+       return currentAccountUpdated;
    }
    private Account getAccountByAccountId(Long accountId)
    {
@@ -82,6 +111,17 @@ public class AccountServiceImpl implements AccountService {
         // Combine prefix with a unique identifier (e.g., UUID)
         String uniqueIdentifier = UUID.randomUUID().toString().replaceAll("-", "");
         return prefix + uniqueIdentifier.substring(0, 7); // Use a portion of the UUID as the account number
+    }
+    private boolean isExpired(String cnicIssueDate, String cnicExpiryDate) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd"); // Date format example
+
+        // Parse string dates into LocalDate objects
+        LocalDate expiryDate = LocalDate.parse(cnicExpiryDate, formatter);
+        LocalDate issueDate = LocalDate.parse(cnicIssueDate, formatter);
+
+        // Compare expiry date with the current date
+        boolean a = issueDate.isBefore(expiryDate);
+        return a;
     }
 
 //        private String generateAccountNumber()

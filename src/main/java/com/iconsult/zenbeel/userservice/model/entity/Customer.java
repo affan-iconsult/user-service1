@@ -1,5 +1,6 @@
 package com.iconsult.zenbeel.userservice.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -25,6 +26,7 @@ public class Customer
     private String userName;
     private String password;
     private String securityPicture;
-//    @OneToMany(mappedBy = customer, cascade = CascadeType.ALL)
-//    List<Account> accountList;
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL,fetch = FetchType.EAGER)
+            @JsonManagedReference
+    List<Account> accountList;
 }

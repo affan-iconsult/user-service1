@@ -12,4 +12,5 @@ public interface AccountMapper {
     Account dtoToJpe(AccountDto accountDto);
     List<Account> accountEntityList (List<AccountDto>accountDtoList);
     List<AccountDto> accountDtoList (List<Account> accountEntityList);
+
 }

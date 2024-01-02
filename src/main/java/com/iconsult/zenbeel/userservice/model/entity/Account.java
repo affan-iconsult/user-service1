@@ -1,5 +1,6 @@
 package com.iconsult.zenbeel.userservice.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -26,4 +27,8 @@ public class Account {
     private String residentialAddress;
     private String lineOfBusiness;
     private String businessAddress;
+    @ManyToOne
+    @JoinColumn(name = "customer_id")
+            @JsonBackReference
+    Customer customer;
 }

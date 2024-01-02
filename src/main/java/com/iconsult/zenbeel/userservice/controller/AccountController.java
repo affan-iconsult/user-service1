@@ -2,6 +2,7 @@ package com.iconsult.zenbeel.userservice.controller;
 
 import com.iconsult.zenbeel.userservice.model.dto.AccountDto;
 import com.iconsult.zenbeel.userservice.service.AccountService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,9 +16,9 @@ public class AccountController {
     @Autowired
     AccountService accountService;
     @PostMapping("/add")
-    public ResponseEntity<String> addAccount(@RequestBody AccountDto accountDto){
-        AccountDto newAccount = accountService.createAccount(accountDto);
-        return new ResponseEntity<>("Account has been registered Account Number : "+newAccount.getAccountNumber(), HttpStatus.CREATED);
+    public ResponseEntity<String> addAccount(@Valid @RequestBody AccountDto accountDto){
+        String newAccount = accountService.createAccount(accountDto);
+        return new ResponseEntity<>(newAccount, HttpStatus.CREATED);
     }
     @PutMapping("/update")
     public ResponseEntity<String> updateInfo(@RequestBody AccountDto accountDto){
@@ -35,6 +36,13 @@ public class AccountController {
     {
         List<AccountDto> accountDtoList = accountService.listOfAccount(cnicNumber);
         return new ResponseEntity<>(accountDtoList,HttpStatus.FOUND);
+    }
+
+    @GetMapping("/verifyAccount")
+    public boolean verifyAccount(@RequestParam("cnic") String cnic, @RequestParam("accountNumber") String accountNumber){
+         return accountService.accountAvailable(accountNumber, cnic);
+
+        //return accountExistService.accountAvailable(accountNumber, cnicNumber);
     }
 
 
